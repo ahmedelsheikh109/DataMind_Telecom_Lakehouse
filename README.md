@@ -6,7 +6,7 @@
 [![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini%202.5%20Flash-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Docker Compose](https://img.shields.io/badge/Infra-Docker%20Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![CI Status](https://img.shields.io/badge/CI-Passing-brightgreen?logo=githubactions&logoColor=white)](https://github.com/)
+[![CI Status](https://img.shields.io/badge/CI-Passing-brightgreen?logo=githubactions&logoColor=white)](https://github.com/ahmedelsheikh109/DataMind_Telecom_Lakehouse/actions)
 [![ARB Audit Score](https://img.shields.io/badge/Architecture%20Review-100%25%20(95%2F95)-success)](docs/arb_audit_report.md)
 
 An enterprise-grade **Telecommunications Medallion Lakehouse** and **Conversational Text-to-SQL + Domain RAG Platform** designed to ingest, refine, model, and analyze Call Detail Records (CDRs) and data sessions at scale. Built with **PySpark**, **Delta Lake (MinIO S3)**, **Trino Distributed SQL Engine**, and **Google Gemini 2.5 Flash**, adhering strictly to **Kimball Dimensional Modeling (Star Schema)** and telecommunications QoS physics.
@@ -156,7 +156,7 @@ The platform was subjected to a live end-to-end audit by 7 specialized domain ag
 
 ### Step 1: Clone & Configure Environment
 ```bash
-git clone https://github.com/<your-username>/DataMind_Telecom_Lakehouse.git
+git clone https://github.com/ahmedelsheikh109/DataMind_Telecom_Lakehouse.git
 cd DataMind_Telecom_Lakehouse
 
 # Copy environment template
