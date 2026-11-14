@@ -1,0 +1,60 @@
+# ==============================================================================
+# Enterprise GitIgnore - DataMind Telecom Lakehouse
+# ==============================================================================
+
+# Secrets, Environment & Credentials (CRITICAL: Never commit to GitHub)
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook Checkpoints & Scratch
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+*-checkpoint.ipynb
+
+# Testing, Coverage & Type Checking
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Trino & Local Storage Artifacts
+trino/metastore/**/*.crc
+*.crc
+.DS_Store
+Thumbs.db
+
+# Large Delta Lake / Parquet local cache (if downloaded locally)
+*.parquet
+*.delta
+*.log

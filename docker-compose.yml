@@ -1,0 +1,78 @@
+version: '3.8'
+name: 'new'
+
+services:
+  kafka:
+    image: confluentinc/confluent-local:7.4.0
+    container_name: datacore_kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: datacore_minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # UI
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  unitycatalog:
+    image: unitycatalog/unitycatalog:latest
+    container_name: datacore_uc
+    ports:
+      - "8081:8080" # Unity Catalog API
+
+  jupyter:
+    image: jupyter/pyspark-notebook:latest
+    container_name: datacore_jupyter
+    depends_on:
+      - minio
+      - unitycatalog
+      - kafka
+    ports:
+      - "8888:8888" # Jupyter Notebook
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_REGION=us-east-1
+    volumes:
+      - ./notebooks:/home/jovyan/work
+
+  nifi:
+    image: apache/nifi:1.24.0
+    container_name: datacore_nifi
+    ports:
+      - "8443:8443"
+    environment:
+      - SINGLE_USER_CREDENTIALS_USERNAME=admin
+      - SINGLE_USER_CREDENTIALS_PASSWORD=adminpassword123
+
+  trino:
+    image: trinodb/trino:450
+    container_name: datacore_trino
+    ports:
+      - "8085:8080"
+    volumes:
+      - ./trino/etc/config.properties:/etc/trino/config.properties:ro
+      - ./trino/etc/node.properties:/etc/trino/node.properties:ro
+      - ./trino/etc/jvm.config:/etc/trino/jvm.config:ro
+      - ./trino/catalog:/etc/trino/catalog:ro
+      - ./trino/metastore:/data/metastore
+    depends_on:
+      - minio
+
+volumes:
+  minio_data:
