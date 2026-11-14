@@ -199,24 +199,30 @@ DataMind_Telecom_Lakehouse/
 │   ├── app.py                          # Streamlit UI with defensive rendering
 │   ├── engine.py                       # Text-to-SQL, self-healing loop & Trino connector
 │   └── knowledge_base.py               # Telecom semantic schema & SLA rules
+├── bronze/
+│   └── bronze.py                       # Bronze Ingestion: Raw CDRs stream & ingestion metadata
+├── silver/
+│   └── silver.py                       # Silver Cleansing: Window deduplication, quarantine & CRM staging
+├── gold/
+│   ├── gold.py                         # Gold Star Schema: Kimball modeling & Delta MERGE
+│   └── date_dim.py                     # Gold Date Dimension: Algorithmic calendar generator
 ├── docs/
 │   ├── architecture.md                 # Detailed architecture & Mermaid diagrams
 │   └── arb_audit_report.md             # Official 7-Agent ARB evaluation report
 ├── notebooks/
-│   ├── build_gold_layer.py             # PySpark script materializing Star Schema in MinIO
-│   ├── run_data_quality_tests.py       # Standalone data quality runner
-│   ├── 01_Bronze_Ingestion.ipynb       # Kafka to Bronze ingestion notebook
-│   ├── 02_Silver_Cleansing.ipynb       # Silver transformation & quarantine
-│   └── 03_Gold_Star_Schema.ipynb       # Gold Star Schema creation
+│   ├── 01_Bronze_Ingestion.ipynb       # Interactive Bronze walkthrough
+│   ├── 02_Silver_Cleansing.ipynb       # Interactive Silver walkthrough
+│   └── 03_Gold_Star_Schema.ipynb       # Interactive Gold walkthrough
 ├── tests/
 │   └── test_telecom_quality.py         # PyTest 9/9 automated assertion test suite
 ├── trino/
 │   ├── catalog/
 │   │   └── delta.properties            # Delta Lake connector configuration
-│   └── etc/
-│       ├── config.properties           # Trino memory & coordinator settings
-│       ├── jvm.config                  # JVM parameters
-│       └── node.properties             # Node discovery configuration
+│   ├── etc/
+│   │   ├── config.properties           # Trino memory & coordinator settings
+│   │   ├── jvm.config                  # JVM parameters
+│   │   └── node.properties             # Node discovery configuration
+│   └── telecom_analytics_queries.sql   # Production SQL telecom queries
 ├── .gitignore                          # Enterprise gitignore excluding secrets & caches
 ├── .env.example                        # Root environment template
 ├── docker-compose.yml                  # Docker Compose multi-service manifest
