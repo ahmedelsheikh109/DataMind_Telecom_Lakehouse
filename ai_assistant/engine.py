@@ -30,19 +30,53 @@ def call_gemini_with_fallback(client, prompt: str) -> str:
             continue
     raise RuntimeError(f"All Gemini models failed. Last error: {str(last_err)}")
 
+FORBIDDEN_SQL_PATTERNS = [
+    r"\bDROP\b", r"\bDELETE\b", r"\bINSERT\b", r"\bUPDATE\b",
+    r"\bALTER\b", r"\bTRUNCATE\b", r"\bMERGE\b", r"\bCREATE\b",
+    r"\bGRANT\b", r"\bREVOKE\b", r"\bEXEC\b", r"\bCALL\b"
+]
+
+def validate_sql_security(sql_query: str) -> str:
+    """
+    Enforces enterprise SQL guardrails:
+    1. Read-Only: Strictly permits SELECT and WITH statements.
+    2. Injection Prevention: Rejects any DDL, DML, or administrative commands.
+    3. Unbounded Scan Prevention: Automatically enforces a LIMIT if omitted.
+    """
+    cleaned = sql_query.strip()
+    
+    # 1. Statement Type Check
+    if not re.match(r"^(SELECT|WITH)\b", cleaned, re.IGNORECASE):
+        raise ValueError("Security Violation: Only read-only SELECT and WITH queries are permitted.")
+    
+    # 2. Forbidden Keyword Check
+    for pattern in FORBIDDEN_SQL_PATTERNS:
+        if re.search(pattern, cleaned, re.IGNORECASE):
+            match = re.search(pattern, cleaned, re.IGNORECASE).group(0)
+            raise ValueError(f"Security Violation: Query contains prohibited keyword '{match}'.")
+    
+    # 3. Mandatory LIMIT Enforcement
+    if not re.search(r"\bLIMIT\s+\d+\b", cleaned, re.IGNORECASE):
+        cleaned += " LIMIT 50"
+        
+    return cleaned
+
 def execute_trino_query(sql_query: str, host: str = "localhost", port: int = 8085):
     """
-    Executes a SQL query against Trino and returns the result as a pandas DataFrame.
+    Validates security guardrails and executes ANSI SQL query against Trino.
     """
+    # Enforce security guardrails
+    safe_sql = validate_sql_security(sql_query)
+    
     conn = trino.dbapi.connect(
         host=host,
         port=port,
-        user="admin",
+        user="telecom_analyst_ro", # Read-only role
         catalog="delta",
         schema="telecom"
     )
     cursor = conn.cursor()
-    cursor.execute(sql_query)
+    cursor.execute(safe_sql)
     columns = [col[0] for col in cursor.description] if cursor.description else []
     rows = cursor.fetchall() if cursor.description else []
     conn.close()

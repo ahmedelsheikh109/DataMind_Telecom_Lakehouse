@@ -94,3 +94,24 @@ def test_rf_signal_strength_bounds(trino_cursor):
     trino_cursor.execute("SELECT COUNT(*) FROM delta.telecom.fact_cdr WHERE signal_strength_dbm > -30 OR signal_strength_dbm < -140")
     violations = trino_cursor.fetchone()[0]
     assert violations == 0, f"Found {violations} records outside RF physical range"
+
+def test_sql_guardrails_blocks_destructive():
+    """Test 10: Security Guardrail must block destructive SQL keywords"""
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ai_assistant"))
+    from engine import validate_sql_security
+    
+    with pytest.raises(ValueError, match="Security Violation"):
+        validate_sql_security("DROP TABLE delta.telecom.fact_cdr")
+
+    with pytest.raises(ValueError, match="Security Violation"):
+        validate_sql_security("DELETE FROM delta.telecom.dim_customer WHERE 1=1")
+
+def test_sql_guardrails_enforces_limit():
+    """Test 11: Security Guardrail must enforce mandatory LIMIT on unbounded scans"""
+    import sys, os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ai_assistant"))
+    from engine import validate_sql_security
+    
+    safe_query = validate_sql_security("SELECT * FROM delta.telecom.fact_cdr")
+    assert "LIMIT 50" in safe_query
